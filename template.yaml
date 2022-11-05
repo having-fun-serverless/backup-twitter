@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  twitter-backup
+
+  Backup your twitter account on a daily basis
+
+Globals:
+    Function:
+        MemorySize: 256
+        Runtime: python3.9
+        Architectures:
+          - arm64
+        Environment:
+          Variables:
+            POWERTOOLS_SERVICE_NAME: backup-twitter-service
+Parameters:
+  TwitterBearerParameterName:
+    Type: String
+    Default: TwitterBearerToken
+  TwitterBearerToken:
+    Type: String
+    Default: 'bla bla please replace me'
+  TwitterAccountsValues:
+    Type: String
+    Default: TServerless,heitor_lessa,shridharpandey
+  
+    
+Resources:
+  ScheduleBackupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 60
+      CodeUri: schedule_backup/
+      Handler: app.lambda_handler
+      Layers:
+        - !Ref SharedLibsLayer
+        - 'arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:2'
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt BackupJobQueue.QueueName
+        - SSMParameterReadPolicy:
+            ParameterName: !Ref TwitterAccountsParameter
+      Environment:
+        Variables:
+          TWITTER_ACCOUNTS_PARAMETER_NAME: !Ref TwitterAccountsParameter
+          BACKUP_JOB_QUEUE_NAME: !Ref BackupJobQueue
+      Events:
+        DailyScheduleBackup:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 10 * * ? *)
+  
+  PullTwitterStream:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 60
+      CodeUri: pull_twitter_stream/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          TWITTER_FH_NAME: !Ref TweetsFirehose
+          TWITTER_BEARER_PARAM_NAME: !Ref TwitterBearerParameterName
+      Layers:
+        - !Ref SharedLibsLayer
+        - 'arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:2'
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt BackupJobQueue.QueueName
+        - FirehoseWritePolicy:
+            DeliveryStreamName: !Ref TweetsFirehose
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref TwitterBearerTokenSecret
+        - KMSDecryptPolicy:
+            KeyId: '*'
+      Events:
+        Batch:
+          Type: SQS
+          Properties:
+              Queue: !GetAtt BackupJobQueue.Arn
+              FunctionResponseTypes:
+                  - ReportBatchItemFailures
+            
+  SharedLibsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: app_layer
+      CompatibleRuntimes:
+        - python3.9
+    Metadata:
+      BuildMethod: python3.9
+      
+  BackupJobDLQ:
+        Type: AWS::SQS::Queue
+        
+  BackupJobQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        maxReceiveCount: 2
+        deadLetterTargetArn: !GetAtt BackupJobDLQ.Arn
+
+  TweetsBucket:
+    Type: AWS::S3::Bucket
+  
+  FHToS3Policy:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - firehose.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: access-s3
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "s3:AbortMultipartUpload"
+                  - "s3:GetBucketLocation"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                  - "s3:ListBucketMultipartUploads"
+                  - "s3:PutObject"
+            
+                Resource: 
+                - !GetAtt TweetsBucket.Arn
+                - !Sub '${TweetsBucket.Arn}/*'
+  TweetsFirehose:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt TweetsBucket.Arn
+        BufferingHints:
+          IntervalInSeconds: 60
+        ErrorOutputPrefix: error/result=!{firehose:error-output-type}/!{timestamp:yyyy/MM/dd}
+        Prefix: TWEET_HANDLE=!{partitionKeyFromQuery:TWEET_HANDLE}/YYYY=!{timestamp:yyyy}/MM=!{timestamp:MM}/!{timestamp:dd}-
+        RoleARN: !GetAtt FHToS3Policy.Arn
+        CompressionFormat: GZIP
+        DynamicPartitioningConfiguration:
+          Enabled: true
+          RetryOptions:
+            DurationInSeconds: 300
+        ProcessingConfiguration:
+          Enabled: true
+          Processors:
+          - Type: MetadataExtraction
+            Parameters:
+            - ParameterName: MetadataExtractionQuery
+              ParameterValue: '{TWEET_HANDLE : .twitter_account}'
+            - ParameterName: JsonParsingEngine
+              ParameterValue: JQ-1.6
+          - Type: AppendDelimiterToRecord
+            Parameters:
+            - ParameterName: Delimiter
+              ParameterValue: "\\n"
+        
+  TwitterAccountsParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Name: TwitterAccounts
+      Description: Twitter accounts to backup on a daily basis.
+      Type: StringList
+      Value: !Ref TwitterAccountsValues
+  
+  TwitterBearerTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Ref TwitterBearerParameterName
+      Description: Contains oauth bearer token
+      SecretString: !Ref TwitterBearerToken
