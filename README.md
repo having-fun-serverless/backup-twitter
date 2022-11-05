@@ -3,7 +3,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-    <img src="images/logo.png" alt="The following logo was created by Dall-E 2 with the following description _3d render of the twitter logo being uploaded to an aluminum bucket_" width="80" height="80">
+    <img src="images/logo.png" alt="The following logo was created by Dall-E 2 with the following description _3d render of the twitter logo being uploaded to an aluminum bucket_">
 
 <h3 align="center">Backing up Twitter</h3>
 
@@ -40,6 +40,7 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#logo">Logo</a></li>
   </ol>
 </details>
 
@@ -59,6 +60,7 @@ Each day the twitter handles are backed up at 10 AM UTC time. Due to Twitter API
 <div align="center">
     <img src="images/twitter-backup.png" alt="Architecture diagram">
 </div>
+
 1. We have an evenbridge as a cron scheduler.
 2. A Lambda is being triggered everyday at 10AM UTC.
 3. In order to pull the configuration, the [AWS Parameters and Secrets Lambda Extension](https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html) is used.
@@ -109,11 +111,15 @@ Don't forget to give the project a star! Thanks again!
 
 Distributed under the Apache License Version 2.0 License. See `LICENSE` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- CONTACT -->
 ## Contact
 
 Efi Merdler-Kravitz - [@TServerless](https://twitter.com/TServerless)
+
+
+
+## Logo
+The project's logo was created by Dall-E 2 with the following description _3d render of the twitter logo being uploaded to an aluminum bucket_
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
