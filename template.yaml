@@ -9,6 +9,8 @@ Globals:
     Function:
         MemorySize: 256
         Runtime: python3.9
+        Tags:
+          'lumigo:auto-trace': 'true'
         Architectures:
           - arm64
         Environment:
