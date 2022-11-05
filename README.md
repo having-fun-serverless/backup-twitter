@@ -63,7 +63,7 @@ Each day the Twitter handles are backed up at 10 AM UTC time. Due to Twitter API
 
 1. We have an evenbridge as a cron scheduler.
 2. A Lambda is being triggered every day at 10 AM UTC.
-3. In order to pull the configuration, the [AWS Parameters and Secrets Lambda Extension]((https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html) is used.
+3. In order to pull the configuration, the [AWS Parameters and Secrets Lambda Extension](https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html) is used.
 4. Each Twitter handle is being pushed as a separate message into SQS.
 5. Using the [batch processing utility](https://awslabs.github.io/aws-lambda-powertools-python/2.1.0/utilities/batch/) in the Python Lambda Power tools. Each message is processed
 6. For each handle, we are making a Twitter API call to get the Twitter account id and then the tweets from the last day
