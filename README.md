@@ -81,8 +81,8 @@ Each day the Twitter handles are backed up at 10 AM UTC time. Due to Twitter API
 ### Installation
 * Clone this repository.
 * Run `sam build` and then `sam deploy --guided`. Accept the default values, except for 
-** _Parameter TwitterBearerToken_ - here, paste the token value you've recevied from Twitter. 
-** _Parameter TwitterAccountsValues_ - Choose the Twitter handles you want to back up. Of course, you can use the default here.
+    * _Parameter TwitterBearerToken_ - paste the token value you've recevied from Twitter. 
+    * _Parameter TwitterAccountsValues_ - Choose the Twitter handles you want to back up. Of course, you can use the default here.
 
 After the deployment is complete you can always change the Twitter handles you want to back up by changing the value found under https://us-east-1.console.aws.amazon.com/systems-manager/parameters?region=us-east-1
 
