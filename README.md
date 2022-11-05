@@ -8,7 +8,7 @@
 <h3 align="center">Backing up Twitter</h3>
 
   <p align="center">
-    Backing up twitter tweets became an hot topic in the last couple of days. I've decided to create a simple POC using Serverless components.
+    Backing up Twitter tweets became a hot topic in the last couple of days. I've decided to create a simple POC using Serverless components.
     <br />
     <br />
     <a href="https://github.com/aws-hebrew-book/backup-twitter/issues">Report Bug</a>
@@ -45,31 +45,31 @@
 </details>
 
 ## About The Project
-Taking a real world issue and trying to tackle it using Serverless component is a good way to learn about Serverless. The following Serverless application is using a scheduled
-task that runs once per day and backs up all the twitter handles that you've configured.
+Taking a real-world issue and trying to tackle it using Serverless components is an excellent way to learn about Serverless. The following Serverless application uses a scheduled task that runs once per day and backs up all the Twitter handles that you've configured.
 
-After deployment you can configure the relevant twitter handles that you want to backup by changing the value of a parameter called `TwitterAccounts` found under
-the [Parameters Store](https://us-east-1.console.aws.amazon.com/systems-manager/parameters?region=us-east-1).
+After deployment you can configure the relevant Twitter handles you want to backup by changing the value of a parameter called TwitterAccounts found under the [Parameters Store](https://us-east-1.console.aws.amazon.com/systems-manager/parameters?region=us-east-1)..
 
-Each day the twitter handles are backed up at 10 AM UTC time. Due to Twitter API restricitons, only the previous day tweets are being backup up. You can find your tweets under S3.
+Each day the Twitter handles are backed up at 10 AM UTC time. Due to Twitter API restrictions, only the previous day's tweets are being backup up. You can find your tweets under S3.
+
 <div align="center">
     <img src="images/s3-bucket.png" alt="Tweets under S3">
 </div>
 
 ### High level architecture
+
 <div align="center">
     <img src="images/twitter-backup.png" alt="Architecture diagram">
 </div>
 
 1. We have an evenbridge as a cron scheduler.
-2. A Lambda is being triggered everyday at 10AM UTC.
-3. In order to pull the configuration, the [AWS Parameters and Secrets Lambda Extension](https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html) is used.
-4. Each twitter handle is being pushed as a seperate mesage into SQS.
-5. Using the [batch processing utility](https://awslabs.github.io/aws-lambda-powertools-python/2.1.0/utilities/batch/) in the Python Lambda Power tools. each message is being processed
-6. For each handle we are making a twitter api call to get the twitter account id and then the tweets from last day.
-7. The twitter bearer token, which is required for authentication, is pulled from AWS secret manager using [AWS Parameters and Secrets Lambda Extension](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html)
+2. A Lambda is being triggered every day at 10 AM UTC.
+3. In order to pull the configuration, the [AWS Parameters and Secrets Lambda Extension]((https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html) is used.
+4. Each Twitter handle is being pushed as a separate message into SQS.
+5. Using the [batch processing utility](https://awslabs.github.io/aws-lambda-powertools-python/2.1.0/utilities/batch/) in the Python Lambda Power tools. Each message is processed
+6. For each handle, we are making a Twitter API call to get the Twitter account id and then the tweets from the last day
+7. The Twitter bearer token, which is required for authentication, is pulled from the AWS secret manager using [AWS Parameters and Secrets Lambda Extension](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_lambda.html)
 8. Tweets are written into AWS Kinesis Firehose which writes them into S3. 
-9. [Dynamic partitioning](https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html) is used, therefore the files created under S3 have handle prefix.
+9. [Dynamic partitioning](https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html) is used, therefore the files created under S3 have handle prefixes.
 
 
 ## Getting started
@@ -81,13 +81,13 @@ Each day the twitter handles are backed up at 10 AM UTC time. Due to Twitter API
 ### Installation
 * Clone this repository.
 * Run `sam build` and then `sam deploy --guided`. Accept the default values, except for 
-** _Parameter TwitterBearerToken_ - here paste the token value you've recevied from twitter. 
-** _Parameter TwitterAccountsValues_ - Choose the twitter handles you want to backup. Of course, you can use the default here.
+** _Parameter TwitterBearerToken_ - here, paste the token value you've recevied from Twitter. 
+** _Parameter TwitterAccountsValues_ - Choose the Twitter handles you want to back up. Of course, you can use the default here.
 
-After the deployment is complete you can always change the twitter handles you want to backup by changing the value found under https://us-east-1.console.aws.amazon.com/systems-manager/parameters?region=us-east-1
+After the deployment is complete you can always change the Twitter handles you want to back up by changing the value found under https://us-east-1.console.aws.amazon.com/systems-manager/parameters?region=us-east-1
 
 ### Testing
-* You can test application manully by executing the `ScheduleBackupFunction` Lambda directly from the console.
+* You can test the application manully by executing the `ScheduleBackupFunction` Lambda directly from the console.
 
 ### Monitoring
 Monitoring is done by using [Lumigo](https://platform.lumigo.io/auth/signup)
