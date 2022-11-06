@@ -37,6 +37,14 @@
         <li><a href="#monitoring">Monitoring</a></li>
       </ul>
     </li>
+    <li>
+      <a href="#landmarks">Landmarks</a>
+      <ul>
+        <li><a href="#dynamic-partitioning">Dynamic Partitioning</a></li>
+        <li><a href="#parameters-and-secret-store-extension">Parameters and Secret store extension</a></li>
+        <li><a href="#batch-processing">Batch processing</a></li>
+      </ul>
+    </li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -92,6 +100,18 @@ After the deployment is complete you can always change the Twitter handles you w
 ### Monitoring
 Monitoring is done by using [Lumigo](https://platform.lumigo.io/auth/signup)
 
+## Landmarks
+### Dynamic Partitioning 
+* IAM Policy for allowing the FH to write into S3 - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/template.yaml#L109
+* The FH configuration which includes the Dynamic Partitioning configuration - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/template.yaml#L138
+
+### Parameters and Secret store extension
+* Create relevant parms in SAM's yaml - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/template.yaml#L167
+* Attached extension to the Lambda - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/template.yaml#L40
+* Pull parameters via code - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/shared/parameters_utils.py#L7
+
+### Batch processing
+* Use SQS batch processor - https://github.com/aws-hebrew-book/backup-twitter/blob/de603d2e41826f5511caefbd78a4b2be841847e5/pull_twitter_stream/app.py#L44
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
